@@ -34,42 +34,64 @@ const StyleAnalysis = ({ userPhoto, selectedClothing, clothingPhotos, onComplete
   }, []);
 
   const extractDominantColors = (imageData) => {
-    return new Promise((resolve) => {
-      const canvas = canvasRef.current;
-      const ctx = canvas.getContext('2d');
-      const img = new Image();
-      
-      img.onload = () => {
-        canvas.width = 100;
-        canvas.height = 100;
-        ctx.drawImage(img, 0, 0, 100, 100);
-        
-        const imageData = ctx.getImageData(0, 0, 100, 100);
-        const data = imageData.data;
-        const colorCounts = {};
-        
-        // Подсчитываем цвета
-        for (let i = 0; i < data.length; i += 16) { // Каждый 4-й пиксель
-          const r = Math.floor(data[i] / 40) * 40;
-          const g = Math.floor(data[i + 1] / 40) * 40;
-          const b = Math.floor(data[i + 2] / 40) * 40;
-          const key = `${r},${g},${b}`;
-          colorCounts[key] = (colorCounts[key] || 0) + 1;
+    return new Promise((resolve, reject) => {
+      try {
+        const canvas = canvasRef.current;
+        if (!canvas) {
+          reject(new Error('Canvas not available'));
+          return;
         }
         
-        // Находим доминирующие цвета
-        const sortedColors = Object.entries(colorCounts)
-          .sort(([,a], [,b]) => b - a)
-          .slice(0, 3)
-          .map(([color]) => {
-            const [r, g, b] = color.split(',').map(Number);
-            return { r, g, b, hex: `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}` };
-          });
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
         
-        resolve(sortedColors);
-      };
-      
-      img.src = imageData;
+        img.onload = () => {
+          try {
+            canvas.width = 100;
+            canvas.height = 100;
+            ctx.drawImage(img, 0, 0, 100, 100);
+            
+            const pixelData = ctx.getImageData(0, 0, 100, 100);
+            const data = pixelData.data;
+            const colorCounts = {};
+            
+            // Подсчитываем цвета
+            for (let i = 0; i < data.length; i += 16) { // Каждый 4-й пиксель
+              const r = Math.floor(data[i] / 40) * 40;
+              const g = Math.floor(data[i + 1] / 40) * 40;
+              const b = Math.floor(data[i + 2] / 40) * 40;
+              const key = `${r},${g},${b}`;
+              colorCounts[key] = (colorCounts[key] || 0) + 1;
+            }
+            
+            // Находим доминирующие цвета
+            const sortedColors = Object.entries(colorCounts)
+              .sort(([,a], [,b]) => b - a)
+              .slice(0, 3)
+              .map(([color]) => {
+                const [r, g, b] = color.split(',').map(Number);
+                return { r, g, b, hex: `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}` };
+              });
+            
+            resolve(sortedColors);
+          } catch (error) {
+            console.error('Ошибка при анализе цветов:', error);
+            reject(error);
+          }
+        };
+        
+        img.onerror = (error) => {
+          console.error('Ошибка загрузки изображения:', error);
+          reject(new Error('Не удалось загрузить изображение для анализа'));
+        };
+        
+        // Устанавливаем crossOrigin для избежания CORS проблем
+        img.crossOrigin = 'anonymous';
+        img.src = imageData;
+      } catch (error) {
+        console.error('Общая ошибка в extractDominantColors:', error);
+        reject(error);
+      }
     });
   };
 
