@@ -158,10 +158,23 @@ const StyleAnalysis = ({ userPhoto, selectedClothing, clothingPhotos, onComplete
       
     } catch (error) {
       console.error('Ошибка анализа:', error);
-      alert('Произошла ошибка при анализе. Попробуйте еще раз.');
-    } finally {
-      setIsAnalyzing(false);
-      setAnalysisStep('');
+      
+      // Более детальное сообщение об ошибке
+      let errorMessage = 'Произошла ошибка при анализе.';
+      if (error.message) {
+        errorMessage += ` Детали: ${error.message}`;
+      }
+      
+      // Показываем ошибку пользователю
+      setAnalysisStep('Ошибка анализа: ' + errorMessage);
+      
+      // Автоматически скрываем ошибку через 5 секунд
+      setTimeout(() => {
+        setAnalysisStep('');
+        setIsAnalyzing(false);
+      }, 5000);
+      
+      return; // Не устанавливаем isAnalyzing в false сразу
     }
   };
 
