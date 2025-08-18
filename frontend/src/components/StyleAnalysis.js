@@ -105,7 +105,18 @@ const StyleAnalysis = ({ userPhoto, selectedClothing, clothingPhotos, onComplete
       setProgress(20);
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      const userColors = await extractDominantColors(userPhoto);
+      let userColors;
+      try {
+        userColors = await extractDominantColors(userPhoto);
+      } catch (error) {
+        console.warn('Не удалось проанализировать цвета пользователя:', error);
+        // Используем стандартные цвета кожи
+        userColors = [
+          { r: 210, g: 180, b: 140, hex: '#d2b48c' }, // Средний тон кожи
+          { r: 160, g: 120, b: 80, hex: '#a07850' },  // Более темный тон
+          { r: 240, g: 220, b: 190, hex: '#f0dcbe' }  // Светлый тон
+        ];
+      }
       
       // Шаг 2: Анализ цветов одежды
       setAnalysisStep('Анализируем цвета одежды...');
