@@ -115,7 +115,16 @@ const StyleAnalysis = ({ userPhoto, selectedClothing, clothingPhotos, onComplete
       const clothingColors = {};
       for (const clothingId of selectedClothing) {
         if (clothingPhotos[clothingId]) {
-          clothingColors[clothingId] = await extractDominantColors(clothingPhotos[clothingId]);
+          try {
+            clothingColors[clothingId] = await extractDominantColors(clothingPhotos[clothingId]);
+          } catch (error) {
+            console.warn(`Не удалось проанализировать цвета для ${clothingId}:`, error);
+            // Используем заглушку цветов
+            clothingColors[clothingId] = [
+              { r: 128, g: 128, b: 128, hex: '#808080' },
+              { r: 64, g: 64, b: 64, hex: '#404040' }
+            ];
+          }
         }
       }
       
