@@ -195,6 +195,10 @@ const StyleAnalysis = ({ userPhoto, selectedClothing, clothingPhotos, onComplete
       }, 5000);
       
       return; // Не устанавливаем isAnalyzing в false сразу
+    } finally {
+      // Убеждаемся, что процесс анализа завершен
+      setIsAnalyzing(false);
+      setAnalysisStep('');
     }
   };
 
