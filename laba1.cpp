@@ -108,7 +108,13 @@ int main(){
         case 3:
             printf("Введите 1, если хотите отсортировать продукты по возрастанию цены и 0, если по убыванию: ");
             scanf("%d",&gg);
-            sort_store(store,n,gg);
+            if (gg!=0 && gg!=1){
+                puts("Вы ввели не то");
+                break;
+            }else{
+                sort_store(store,n,gg);
+            }
+            
             break;
         case 4:
             puts("Всего хорошего! До свидания!");
@@ -119,5 +125,6 @@ int main(){
             break;
         }
     }
+    delete store;
     fclose(ishod);
 }
